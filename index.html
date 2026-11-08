@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Oussama Gharzouni Unit Converter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Noto+Sans+Arabic:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef3fa;--grid:#d9e3f2;--card:#fff;--ink:#13203a;--mute:#5a6a86;--line:#c5d2e6;--accent:#2457d6;--accent-ink:#fff;--out:#fff3c4;--out-ink:#3b2f00;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1626;--grid:#17233a;--card:#16213a;--ink:#e6ecf8;--mute:#93a3c2;--line:#2a3a5c;--accent:#6c97ff;--accent-ink:#0b1630;--out:#3a3210;--out-ink:#ffe9a0;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1626;--grid:#17233a;--card:#16213a;--ink:#e6ecf8;--mute:#93a3c2;--line:#2a3a5c;--accent:#6c97ff;--accent-ink:#0b1630;--out:#3a3210;--out-ink:#ffe9a0;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background-color:var(--bg);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px;color:var(--ink);font:16px/1.5 "IBM Plex Sans",system-ui,sans-serif;min-height:100vh}
+.wrap{max-width:760px;margin:0 auto;padding:28px 16px 48px}
+h1{font-size:clamp(1.7rem,5vw,2.4rem);line-height:1.1;margin:0 0 6px;font-weight:600;letter-spacing:-.01em}
+.sub{margin:0 0 22px;color:var(--mute)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px}
+label{display:block;font-size:.85rem;color:var(--mute);margin-bottom:4px}
+select,input{width:100%;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:9px 10px}
+select:focus-visible,input:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.pick{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:end;margin-top:14px}
+.swap{width:auto;padding:9px 12px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:6px;cursor:pointer;font:inherit}
+.swap:disabled{opacity:.4;cursor:default}
+@media(max-width:560px){.pick{grid-template-columns:1fr}.swap{justify-self:start}}
+.hint{color:var(--mute);margin:0}
+.ratio{font-family:"IBM Plex Mono",monospace;font-size:.9rem;margin:0 0 12px;color:var(--mute)}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:420px}
+th{text-align:left;font-weight:600;padding:8px 6px;border-bottom:2px solid var(--ink);font-size:.95rem}
+td{padding:5px 6px;border-bottom:1px solid var(--line)}
+td input{font-family:"IBM Plex Mono",monospace}
+.out{font-family:"IBM Plex Mono",monospace;background:var(--out);color:var(--out-ink);border-radius:6px;padding:9px 10px;min-height:42px;overflow-wrap:anywhere}
+.out.bad{background:transparent;color:var(--mute);font-family:inherit}
+h2{font-size:1.15rem;margin:0 0 4px;font-weight:600}
+.calc{font-family:"IBM Plex Mono",monospace;font-size:.9rem;overflow-wrap:anywhere}
+.note{color:var(--mute);font-size:.82rem;margin-top:2px}
+.steps td{vertical-align:top;padding:8px 6px}
+.steps table{min-width:560px}
+.actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.btn{font:inherit;padding:9px 14px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);cursor:pointer}
+.btn.alt{background:transparent;color:var(--ink);border-color:var(--line)}
+[hidden]{display:none!important}
+
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;direction:ltr}
+.top h1{text-align:left}
+.badge{font:600 .95rem/1 "IBM Plex Mono",monospace;letter-spacing:.08em;padding:8px 10px;border:2px solid var(--ink);border-radius:6px;white-space:nowrap}
+.langs{display:flex;gap:6px;margin:0 0 14px;direction:ltr}
+.langs button{font:inherit;font-size:.9rem;padding:6px 12px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:6px;cursor:pointer}
+.langs button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+html[lang="ar"] body{font-family:"Noto Sans Arabic","IBM Plex Sans",system-ui,sans-serif}
+.out,td input{direction:ltr;text-align:left}
+.ladder table{width:auto;min-width:100%}
+.ladder th,.ladder td{text-align:center;white-space:nowrap;padding:8px 10px;border:1px solid var(--line);font-family:"IBM Plex Mono",monospace;font-size:.9rem}
+.ladder th{border-bottom:2px solid var(--ink)}
+.ladder .lab{position:sticky;left:0;background:var(--card);text-align:left;font-family:inherit;font-weight:600;z-index:1}
+.ladder .src{background:color-mix(in srgb,var(--accent) 22%,var(--card))}
+.ladder .dst{background:var(--out);color:var(--out-ink)}
+.ladder .path{background:color-mix(in srgb,var(--accent) 8%,var(--card))}
+.calcs{list-style:none;padding:0;margin:12px 0 0;font-family:"IBM Plex Mono",monospace;font-size:.9rem;direction:ltr;text-align:left}
+.calcs li{padding:3px 0;overflow-wrap:anywhere}
+.note ul{margin:6px 0 0;padding-inline-start:1.2rem}
+.note li{margin:6px 0}
+
+.ladder table.school{width:auto;min-width:0;margin:0 auto;border-collapse:collapse}
+.ladder table.school th{padding:8px 4px;border:2px solid var(--ink);font-size:1rem;text-align:center;font-family:inherit}
+.ladder table.school td{width:2.1rem;min-width:2.1rem;height:2.3rem;padding:0;border:1px solid var(--ink);text-align:center;position:relative;font-size:1.05rem}
+.ladder table.school td.cs{border-left:2px solid var(--ink)}
+.ladder table.school td.d{font-weight:600;color:var(--accent)}
+.ladder table.school td.z{color:var(--mute)}
+.ladder table.school td.tp{box-shadow:inset -4px 0 0 var(--out-ink)}
+.ladder table.school td.dp::after{content:attr(data-d);position:absolute;right:-.3em;bottom:-.25em;font-weight:700;color:var(--accent);z-index:2;font-size:1.3rem;line-height:1}
+.ladder table.school th.tail{border:none}
+body.locked #app{display:none}
+body:not(.locked) #gate{display:none}
+</style>
+</head>
+<body class="locked">
+<div class="wrap">
+  <div class="top">
+    <h1>Oussama Gharzouni Unit Converter</h1>
+    <span class="badge" title="Oussama Gharzouni Unit Converter">OGUC</span>
+  </div>
+  <div class="langs" role="group" aria-label="Language">
+    <button data-lang="en">English</button>
+    <button data-lang="fr">Français</button>
+    <button data-lang="ar">العربية</button>
+    <button id="out" data-i="gOut" hidden></button>
+  </div>
+  <p class="sub" data-i="sub"></p>
+
+  <div class="panel" id="gate">
+    <h2 data-i="gTitle"></h2>
+    <p class="hint" data-i="gSub" style="margin-bottom:10px"></p>
+    <label for="email" data-i="gEmail"></label>
+    <input id="email" type="email" autocomplete="email" inputmode="email" style="direction:ltr;text-align:left">
+    <p class="hint" id="gErr" role="alert" style="color:#d64545;min-height:1.4em;margin:8px 0 0"></p>
+    <div class="actions"><button class="btn" id="gBtn" data-i="gBtn"></button></div>
+  </div>
+
+  <div id="app">
+
+  <div class="panel">
+    <label for="cat" data-i="qty"></label>
+    <select id="cat"></select>
+    <div class="pick">
+      <div><label for="from" data-i="from"></label><select id="from"></select></div>
+      <button class="swap" id="swap" disabled>⇄</button>
+      <div><label for="to" data-i="to"></label><select id="to"></select></div>
+    </div>
+  </div>
+
+  <div class="panel" id="hintPanel"><p class="hint" data-i="hint"></p></div>
+
+  <div class="panel" id="tablePanel" hidden>
+    <p class="ratio" id="ratio"></p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th id="thFrom"></th><th id="thTo"></th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div class="actions">
+      <button class="btn" id="add" data-i="add"></button>
+      <button class="btn alt" id="clear" data-i="clear"></button>
+    </div>
+  </div>
+
+  <div class="panel ladder" id="ladderPanel" hidden>
+    <h2 data-i="lTitle"></h2>
+    <p class="hint" id="lIntroP" style="margin-bottom:10px"></p>
+    <div class="scroll" dir="ltr"><table id="ladder"></table></div>
+    <ul class="calcs" id="calcs"></ul>
+  </div>
+
+  <div class="panel note">
+    <h2 data-i="nTitle"></h2>
+    <ul><li data-i="nA"></li><li data-i="nB"></li></ul>
+  </div>
+  </div>
+</div>
+
+<script src="emails.js"></script>
+<script>
+const PI = Math.PI;
+const F = a => a.map(([n, f]) => ({ n, to: x => x * f, from: b => b / f }));
+const DATA = {
+  "Length": F([["m — metre",1],["km — kilometre",1e3],["hm — hectometre",1e2],["dam — decametre",10],["dm — decimetre",0.1],["cm — centimetre",1e-2],["mm — millimetre",1e-3],["µm — micrometre",1e-6],["nm — nanometre",1e-9],["pm — picometre",1e-12],["fm — femtometre",1e-15],["Å — ångström",1e-10],["in — inch",0.0254],["ft — foot",0.3048],["yd — yard",0.9144],["mi — mile",1609.344],["nmi — nautical mile",1852],["AU — astronomical unit",1.495978707e11],["ly — light-year",9.4607304725808e15],["pc — parsec",3.0856775814914e16]]),
+  "Mass": F([["kg — kilogram",1],["g — gram",1e-3],["hg — hectogram",0.1],["dag — decagram",0.01],["dg — decigram",1e-4],["cg — centigram",1e-5],["mg — milligram",1e-6],["µg — microgram",1e-9],["t — tonne",1e3],["lb — pound",0.45359237],["oz — ounce",0.028349523125],["slug — slug",14.593903],["u — atomic mass unit",1.66053906660e-27],["eV/c² — electronvolt per c²",1.78266192e-36]]),
+  "Time": F([["s — second",1],["ms — millisecond",1e-3],["µs — microsecond",1e-6],["ns — nanosecond",1e-9],["ps — picosecond",1e-12],["min — minute",60],["h — hour",3600],["d — day",86400],["wk — week",604800],["yr — Julian year",31557600]]),
+  "Temperature": [
+    {n:"K — kelvin",to:x=>x,from:b=>b,e1:s=>s,e2:s=>s},
+    {n:"°C — degree Celsius",to:x=>x+273.15,from:b=>b-273.15,e1:s=>s+" + 273.15",e2:s=>s+" − 273.15"},
+    {n:"°F — degree Fahrenheit",to:x=>(x-32)*5/9+273.15,from:b=>(b-273.15)*9/5+32,e1:s=>"("+s+" − 32) × 5/9 + 273.15",e2:s=>"("+s+" − 273.15) × 9/5 + 32"},
+    {n:"°R — degree Rankine",to:x=>x*5/9,from:b=>b*9/5,e1:s=>s+" × 5/9",e2:s=>s+" × 9/5"}],
+  "Area": F([["m² — square metre",1],["km² — square kilometre",1e6],["hm² — square hectometre",1e4],["dam² — square decametre",100],["dm² — square decimetre",1e-2],["cm² — square centimetre",1e-4],["mm² — square millimetre",1e-6],["ha — hectare",1e4],["in² — square inch",6.4516e-4],["ft² — square foot",0.09290304],["mi² — square mile",2589988.110336],["acre — acre",4046.8564224],["b — barn",1e-28]]),
+  "Volume": F([["m³ — cubic metre",1],["km³ — cubic kilometre",1e9],["hm³ — cubic hectometre",1e6],["dam³ — cubic decametre",1e3],["dm³ — cubic decimetre",1e-3],["L — litre",1e-3],["hL — hectolitre",0.1],["daL — decalitre",0.01],["dL — decilitre",1e-4],["cL — centilitre",1e-5],["mL — millilitre",1e-6],["cm³ — cubic centimetre",1e-6],["mm³ — cubic millimetre",1e-9],["in³ — cubic inch",1.6387064e-5],["ft³ — cubic foot",0.028316846592],["gal (US) — US gallon",0.003785411784],["qt (US) — US quart",9.46352946e-4],["pt (US) — US pint",4.73176473e-4],["gal (UK) — imperial gallon",0.00454609]]),
+  "Speed": F([["m/s — metre per second",1],["km/h — kilometre per hour",1/3.6],["cm/s — centimetre per second",1e-2],["mph — mile per hour",0.44704],["ft/s — foot per second",0.3048],["kn — knot",1852/3600],["c — speed of light",299792458],["Mach — Mach (sea level, 15 °C)",340.29]]),
+  "Acceleration": F([["m/s² — metre per second squared",1],["cm/s² — gal",1e-2],["ft/s² — foot per second squared",0.3048],["g — standard gravity",9.80665]]),
+  "Force": F([["N — newton",1],["kN — kilonewton",1e3],["mN — millinewton",1e-3],["dyn — dyne",1e-5],["kgf — kilogram-force",9.80665],["lbf — pound-force",4.4482216152605],["pdl — poundal",0.138254954376]]),
+  "Pressure": F([["Pa — pascal",1],["hPa — hectopascal",100],["kPa — kilopascal",1e3],["MPa — megapascal",1e6],["bar — bar",1e5],["mbar — millibar",100],["atm — standard atmosphere",101325],["Torr — torr",101325/760],["mmHg — millimetre of mercury",133.322387415],["psi — pound per square inch",6894.757293168]]),
+  "Energy": F([["J — joule",1],["kJ — kilojoule",1e3],["MJ — megajoule",1e6],["mJ — millijoule",1e-3],["cal — calorie (thermochemical)",4.184],["kcal — kilocalorie",4184],["Wh — watt-hour",3600],["kWh — kilowatt-hour",3.6e6],["eV — electronvolt",1.602176634e-19],["keV — kiloelectronvolt",1.602176634e-16],["MeV — megaelectronvolt",1.602176634e-13],["GeV — gigaelectronvolt",1.602176634e-10],["erg — erg",1e-7],["BTU — British thermal unit",1055.05585262],["ft·lbf — foot-pound force",1.3558179483314]]),
+  "Power": F([["W — watt",1],["mW — milliwatt",1e-3],["kW — kilowatt",1e3],["MW — megawatt",1e6],["GW — gigawatt",1e9],["hp — mechanical horsepower",745.69987158],["PS — metric horsepower",735.49875],["BTU/h — BTU per hour",0.29307107],["erg/s — erg per second",1e-7]]),
+  "Frequency": F([["Hz — hertz",1],["kHz — kilohertz",1e3],["MHz — megahertz",1e6],["GHz — gigahertz",1e9],["THz — terahertz",1e12],["rpm — revolutions per minute",1/60],["rad/s — radian per second",1/(2*PI)]]),
+  "Angle": F([["rad — radian",1],["mrad — milliradian",1e-3],["° — degree",PI/180],["′ — arcminute",PI/10800],["″ — arcsecond",PI/648000],["gon — gradian",PI/200],["rev — revolution",2*PI]]),
+  "Electric charge": F([["C — coulomb",1],["mC — millicoulomb",1e-3],["µC — microcoulomb",1e-6],["nC — nanocoulomb",1e-9],["pC — picocoulomb",1e-12],["e — elementary charge",1.602176634e-19],["mAh — milliampere-hour",3.6],["Ah — ampere-hour",3600]]),
+  "Electric current": F([["A — ampere",1],["kA — kiloampere",1e3],["mA — milliampere",1e-3],["µA — microampere",1e-6],["nA — nanoampere",1e-9]]),
+  "Voltage": F([["V — volt",1],["kV — kilovolt",1e3],["MV — megavolt",1e6],["mV — millivolt",1e-3],["µV — microvolt",1e-6]]),
+  "Resistance": F([["Ω — ohm",1],["mΩ — milliohm",1e-3],["kΩ — kilohm",1e3],["MΩ — megohm",1e6],["GΩ — gigohm",1e9]]),
+  "Capacitance": F([["F — farad",1],["mF — millifarad",1e-3],["µF — microfarad",1e-6],["nF — nanofarad",1e-9],["pF — picofarad",1e-12]]),
+  "Inductance": F([["H — henry",1],["mH — millihenry",1e-3],["µH — microhenry",1e-6],["nH — nanohenry",1e-9]]),
+  "Magnetic flux density": F([["T — tesla",1],["mT — millitesla",1e-3],["µT — microtesla",1e-6],["nT — nanotesla",1e-9],["G — gauss",1e-4]]),
+  "Magnetic flux": F([["Wb — weber",1],["mWb — milliweber",1e-3],["µWb — microweber",1e-6],["Mx — maxwell",1e-8]]),
+  "Density": F([["kg/m³ — kilogram per cubic metre",1],["g/cm³ — gram per cubic centimetre",1e3],["g/mL — gram per millilitre",1e3],["kg/L — kilogram per litre",1e3],["g/L — gram per litre",1],["lb/ft³ — pound per cubic foot",16.018463374],["lb/in³ — pound per cubic inch",27679.904710]]),
+  "Torque": F([["N·m — newton-metre",1],["N·cm — newton-centimetre",1e-2],["kgf·m — kilogram-force metre",9.80665],["lbf·ft — pound-force foot",1.3558179483314],["lbf·in — pound-force inch",0.1129848290276]]),
+  "Radioactivity": F([["Bq — becquerel",1],["kBq — kilobecquerel",1e3],["MBq — megabecquerel",1e6],["GBq — gigabecquerel",1e9],["Ci — curie",3.7e10],["mCi — millicurie",3.7e7]]),
+  "Radiation dose": F([["Sv — sievert (or Gy)",1],["mSv — millisievert",1e-3],["µSv — microsievert",1e-6],["rem — rem (or rad)",1e-2]])
+};
+
+const $ = id => document.getElementById(id);
+const sym = n => n.split(" — ")[0];
+const BASE = {"Length":"m","Mass":"kg","Time":"s","Temperature":"K","Area":"m²","Volume":"m³","Speed":"m/s","Acceleration":"m/s²","Force":"N","Pressure":"Pa","Energy":"J","Power":"W","Frequency":"Hz","Angle":"rad","Electric charge":"C","Electric current":"A","Voltage":"V","Resistance":"Ω","Capacitance":"F","Inductance":"H","Magnetic flux density":"T","Magnetic flux":"Wb","Density":"kg/m³","Torque":"N·m","Radioactivity":"Bq","Radiation dose":"Sv"};
+
+const I = {
+  en:{sub:"Pick a quantity, choose the unit you have and the unit you want, then type your numbers in the table.",qty:"Quantity",from:"Convert from",to:"Convert to",choose:"Choose a unit…",swap:"Swap units",hint:"Choose both units to open the conversion table.",thFrom:"From",thTo:"To",add:"Add row",clear:"Clear numbers",bad:"not a number",lTitle:"Conversion table",gTitle:"Sign in",gSub:"Enter the email address your teacher added to the list to open the converter.",gEmail:"Email address",gBtn:"Open the converter",gErr:"This email address is not on the list. Check the spelling or ask your teacher.",gOut:"Sign out",lIntro:"Put one digit per box. The units digit goes in the last box of the starting unit’s column, and the comma comes right after it. To read the result, put the comma after the last box of the target column and fill the empty boxes with zeros.",lIntro2:"Units run from the largest to the smallest. Your number goes in the starting unit’s column and the result lands in the target column. Shaded columns show the path between them.",unit:"Unit",rowSize:"Size of 1 unit ({B})",rowTK:"To kelvin",rowFK:"From kelvin",typeHint:"Type a number in the table above to see it placed here.",nTitle:"Two cases are not an exact table",nA:"Non-metric units such as miles or inches: these can’t be placed digit by digit. The page first converts to the metric unit, for example 5 mi = 8046.72 m, places that number in the table and reads the result from there.",nB:"Speed, acceleration, density, torque and temperature: these have no decimal ladder, so they use a table with one column per unit."},
+  fr:{sub:"Choisissez une grandeur, l’unité de départ et l’unité d’arrivée, puis saisissez vos nombres dans le tableau.",qty:"Grandeur",from:"Convertir de",to:"Convertir en",choose:"Choisir une unité…",swap:"Inverser les unités",hint:"Choisissez les deux unités pour ouvrir le tableau de conversion.",thFrom:"De",thTo:"Vers",add:"Ajouter une ligne",clear:"Effacer les nombres",bad:"pas un nombre",lTitle:"Tableau de conversion",gTitle:"Connexion",gSub:"Saisissez l’adresse e-mail que votre enseignant a ajoutée à la liste pour ouvrir le convertisseur.",gEmail:"Adresse e-mail",gBtn:"Ouvrir le convertisseur",gErr:"Cette adresse e-mail n’est pas dans la liste. Vérifiez l’orthographe ou demandez à votre enseignant.",gOut:"Se déconnecter",lIntro:"Placez un chiffre par case. Le chiffre des unités va dans la dernière case de la colonne de départ, et la virgule vient juste après. Pour lire le résultat, placez la virgule après la dernière case de la colonne d’arrivée et complétez les cases vides avec des zéros.",lIntro2:"Les unités vont de la plus grande à la plus petite. Votre nombre se place dans la colonne de départ et le résultat apparaît dans la colonne d’arrivée. Les colonnes colorées montrent le chemin entre les deux.",unit:"Unité",rowSize:"Valeur de 1 unité ({B})",rowTK:"Vers le kelvin",rowFK:"Depuis le kelvin",typeHint:"Saisissez un nombre dans le tableau ci-dessus pour le voir ici.",nTitle:"Deux cas ne donnent pas un tableau exact",nA:"Unités non métriques (miles, pouces…) : on ne peut pas les placer chiffre par chiffre. La page convertit d’abord en unité métrique, par exemple 5 mi = 8046,72 m, place ce nombre dans le tableau et lit le résultat à partir de là.",nB:"Vitesse, accélération, masse volumique, moment de force et température : il n’y a pas d’échelle décimale, donc le tableau comporte une colonne par unité."},
+  ar:{sub:"اختر الكمية، ثم الوحدة التي لديك والوحدة المطلوبة، ثم اكتب أرقامك في الجدول.",qty:"الكمية",from:"التحويل من",to:"التحويل إلى",choose:"اختر وحدة…",swap:"عكس الوحدتين",hint:"اختر الوحدتين لفتح جدول التحويل.",thFrom:"من",thTo:"إلى",add:"إضافة صف",clear:"مسح الأرقام",bad:"ليس رقمًا",lTitle:"جدول التحويل",gTitle:"تسجيل الدخول",gSub:"اكتب عنوان البريد الإلكتروني الذي أضافه معلمك إلى القائمة لفتح المحوّل.",gEmail:"البريد الإلكتروني",gBtn:"افتح المحوّل",gErr:"هذا البريد الإلكتروني غير موجود في القائمة. تحقّق من الكتابة أو اسأل معلمك.",gOut:"تسجيل الخروج",lIntro:"ضع رقمًا واحدًا في كل خانة. يوضع رقم الآحاد في آخر خانة من عمود وحدة البداية، وتأتي الفاصلة بعدها مباشرة. لقراءة النتيجة، ضع الفاصلة بعد آخر خانة من عمود الوحدة المطلوبة واملأ الخانات الفارغة بالأصفار.",lIntro2:"الوحدات مرتبة من الأكبر إلى الأصغر. ضع رقمك في عمود وحدة البداية، وستظهر النتيجة في عمود الوحدة المطلوبة. الأعمدة الملوّنة تبيّن المسار بينهما.",unit:"الوحدة",rowSize:"قيمة وحدة واحدة ({B})",rowTK:"إلى الكلفن",rowFK:"من الكلفن",typeHint:"اكتب رقمًا في الجدول أعلاه لتراه هنا.",nTitle:"حالتان لا يكون فيهما الجدول دقيقًا",nA:"الوحدات غير المترية مثل الميل والبوصة: لا يمكن وضعها رقمًا رقمًا. يحوّل التطبيق أولًا إلى الوحدة المترية، مثل 5 mi = 8046.72 m، ثم يضع هذا الرقم في الجدول ويقرأ النتيجة منه.",nB:"السرعة والتسارع والكثافة وعزم القوة ودرجة الحرارة: ليس لها سلّم عشري، لذلك يُعرض جدول بعمود لكل وحدة."}
+};
+const CATN = {
+  fr:{"Length":"Longueur","Mass":"Masse","Time":"Temps","Temperature":"Température","Area":"Aire","Volume":"Volume","Speed":"Vitesse","Acceleration":"Accélération","Force":"Force","Pressure":"Pression","Energy":"Énergie","Power":"Puissance","Frequency":"Fréquence","Angle":"Angle","Electric charge":"Charge électrique","Electric current":"Courant électrique","Voltage":"Tension électrique","Resistance":"Résistance","Capacitance":"Capacité électrique","Inductance":"Inductance","Magnetic flux density":"Induction magnétique","Magnetic flux":"Flux magnétique","Density":"Masse volumique","Torque":"Moment de force","Radioactivity":"Radioactivité","Radiation dose":"Dose de rayonnement"},
+  ar:{"Length":"الطول","Mass":"الكتلة","Time":"الزمن","Temperature":"درجة الحرارة","Area":"المساحة","Volume":"الحجم","Speed":"السرعة","Acceleration":"التسارع","Force":"القوة","Pressure":"الضغط","Energy":"الطاقة","Power":"القدرة","Frequency":"التردد","Angle":"الزاوية","Electric charge":"الشحنة الكهربائية","Electric current":"التيار الكهربائي","Voltage":"الجهد الكهربائي","Resistance":"المقاومة","Capacitance":"السعة الكهربائية","Inductance":"المحاثة","Magnetic flux density":"كثافة الفيض المغناطيسي","Magnetic flux":"الفيض المغناطيسي","Density":"الكثافة","Torque":"العزم","Radioactivity":"النشاط الإشعاعي","Radiation dose":"الجرعة الإشعاعية"}
+};
+
+let lang = "";
+try { lang = localStorage.getItem("oguc-lang") || ""; } catch (e) {}
+if (!I[lang]) { const n = (navigator.language || "en").slice(0, 2); lang = I[n] ? n : "en"; }
+const T = k => I[lang][k];
+const catName = k => lang === "en" ? k : CATN[lang][k];
+let vals = [""];
+
+function fillSelect(s, list, placeholder) {
+  s.innerHTML = "";
+  const p = document.createElement("option");
+  p.value = ""; p.textContent = placeholder; s.appendChild(p);
+  list.forEach((u, i) => { const o = document.createElement("option"); o.value = i; o.textContent = u.n; s.appendChild(o); });
+}
+function fmt(v) {
+  if (!isFinite(v)) return "—";
+  if (v === 0) return "0";
+  const a = Math.abs(v);
+  if (a < 1e-4 || a >= 1e9) return v.toExponential(6).replace(/\.?0+e/, "e");
+  return String(parseFloat(v.toPrecision(10)));
+}
+function pow10(r) {
+  const k = Math.log10(r);
+  if (Math.abs(k - Math.round(k)) < 1e-9) return Math.round(k) === 0 ? "1" : "10<sup>" + Math.round(k) + "</sup>";
+  return fmt(r);
+}
+const units = () => DATA[$("cat").value];
+function sel() {
+  const u = units(), f = $("from").value, t = $("to").value;
+  return (u && f !== "" && t !== "") ? [u[f], u[t]] : null;
+}
+function convert(s, a, b) {
+  const t = s.trim().replace(",", ".");
+  if (t === "") return { text: "" };
+  const x = Number(t);
+  if (isNaN(x)) return { text: T("bad"), bad: true };
+  return { text: fmt(b.from(a.to(x))) };
+}
+
+function renderGeneric(a, b) {
+  $("ladder").className = "";
+  const cat = $("cat").value, B = BASE[cat], temp = cat === "Temperature";
+  const order = temp ? units().slice() : units().slice().sort((p, q) => q.to(1) - p.to(1));
+  const ia = order.indexOf(a), ib = order.indexOf(b), lo = Math.min(ia, ib), hi = Math.max(ia, ib);
+  const cls = i => i === ia ? "src" : i === ib ? "dst" : (i > lo && i < hi) ? "path" : "";
+  const cell = (tag, i, txt) => "<" + tag + ' class="' + cls(i) + '">' + txt + "</" + tag + ">";
+  let h = '<thead><tr><th class="lab">' + T("unit") + "</th>" + order.map((x, i) => cell("th", i, sym(x.n))).join("") + "</tr></thead><tbody>";
+  if (temp) {
+    h += '<tr><td class="lab">' + T("rowTK") + "</td>" + order.map((x, i) => cell("td", i, x.e1("x"))).join("") + "</tr>";
+    h += '<tr><td class="lab">' + T("rowFK") + "</td>" + order.map((x, i) => cell("td", i, x.e2("K"))).join("") + "</tr>";
+  } else {
+    h += '<tr><td class="lab">' + T("rowSize").replace("{B}", B) + "</td>" + order.map((x, i) => cell("td", i, fmt(x.to(1)))).join("") + "</tr>";
+  }
+  const calcs = [], sa = sym(a.n), sb = sym(b.n);
+  vals.forEach(s => {
+    const t = s.trim().replace(",", ".");
+    if (t === "" || isNaN(Number(t))) return;
+    const x = Number(t), base = a.to(x), res = b.from(base);
+    h += '<tr><td class="lab">' + fmt(x) + " " + sa + "</td>" + order.map((u, i) => {
+      let txt = "";
+      if (i > lo && i < hi) txt = ib > ia ? "→" : "←";
+      if (i === ia) txt = fmt(x);
+      if (i === ib) txt = fmt(res);
+      return cell("td", i, txt);
+    }).join("") + "</tr>";
+    calcs.push(temp
+      ? a.e1(fmt(x)) + " = " + fmt(base) + " K ; " + b.e2(fmt(base)) + " = " + fmt(res) + " " + sb
+      : fmt(x) + " " + sa + " × " + pow10(a.to(1) / b.to(1)) + " = " + fmt(res) + " " + sb);
+  });
+  if (!calcs.length) h += '<tr><td class="lab">…</td><td colspan="' + order.length + '">' + T("typeHint") + "</td></tr>";
+  $("ladder").innerHTML = h + "</tbody>";
+  $("calcs").innerHTML = calcs.map(c => "<li>" + c + "</li>").join("");
+}
+
+const mk = (exp, s) => ({ exp, m: s.split(",").map(p => { const [y, d, x] = p.split(":"); return { s: y, d: +d, x: !!x }; }) });
+const FAM = {
+  "Length":[mk(1,"km:3,hm:2,dam:1,m:0,dm:-1,cm:-2,mm:-3,µm:-6:x,nm:-9:x,pm:-12:x,fm:-15:x")],
+  "Mass":[mk(1,"t:6,kg:3,hg:2,dag:1,g:0,dg:-1,cg:-2,mg:-3,µg:-6:x")],
+  "Time":[mk(1,"s:0,ms:-3,µs:-6,ns:-9,ps:-12")],
+  "Area":[mk(2,"km²:3,hm²:2,dam²:1,m²:0,dm²:-1,cm²:-2,mm²:-3")],
+  "Volume":[mk(3,"km³:3,hm³:2,dam³:1,m³:0,dm³:-1,cm³:-2,mm³:-3"), mk(1,"hL:2,daL:1,L:0,dL:-1,cL:-2,mL:-3")],
+  "Frequency":[mk(1,"THz:12,GHz:9,MHz:6,kHz:3,Hz:0")],
+  "Force":[mk(1,"kN:3,N:0,mN:-3")],
+  "Pressure":[mk(1,"MPa:6,kPa:3,hPa:2,Pa:0")],
+  "Energy":[mk(1,"MJ:6,kJ:3,J:0,mJ:-3"), mk(1,"GeV:9,MeV:6,keV:3,eV:0")],
+  "Power":[mk(1,"GW:9,MW:6,kW:3,W:0,mW:-3")],
+  "Angle":[mk(1,"rad:0,mrad:-3")],
+  "Electric charge":[mk(1,"C:0,mC:-3,µC:-6,nC:-9,pC:-12")],
+  "Electric current":[mk(1,"kA:3,A:0,mA:-3,µA:-6,nA:-9")],
+  "Voltage":[mk(1,"MV:6,kV:3,V:0,mV:-3,µV:-6")],
+  "Resistance":[mk(1,"GΩ:9,MΩ:6,kΩ:3,Ω:0,mΩ:-3")],
+  "Capacitance":[mk(1,"F:0,mF:-3,µF:-6,nF:-9,pF:-12")],
+  "Inductance":[mk(1,"H:0,mH:-3,µH:-6,nH:-9")],
+  "Magnetic flux density":[mk(1,"T:0,mT:-3,µT:-6,nT:-9")],
+  "Magnetic flux":[mk(1,"Wb:0,mWb:-3,µWb:-6")],
+  "Radioactivity":[mk(1,"GBq:9,MBq:6,kBq:3,Bq:0")],
+  "Radiation dose":[mk(1,"Sv:0,mSv:-3,µSv:-6")]
+};
+const NUM = /^[+-]?(\d+\.?\d*|\.\d+)(e[+-]?\d+)?$/i;
+function plain(t) {
+  let m = String(t).trim().replace(",", ".").replace(/^[+-]/, "").toLowerCase(), e = 0;
+  if (m.includes("e")) { const q = m.split("e"); m = q[0]; e = parseInt(q[1], 10); }
+  const q = m.split("."), i = q[0] || "0", f = q[1] || "";
+  let d = i + f, p = i.length + e;
+  if (p <= 0) { d = "0".repeat(1 - p) + d; p = 1; }
+  if (p > d.length) d += "0".repeat(p - d.length);
+  return { i: d.slice(0, p).replace(/^0+(?=\d)/, ""), f: d.slice(p).replace(/0+$/, "") };
+}
+const pow10i = k => k === 0 ? "1" : "10<sup>" + k + "</sup>";
+function pickFam(fl, a, b) {
+  const has = (f, u) => f.m.some(c => c.s === sym(u.n));
+  return fl.find(f => has(f, a) && has(f, b)) || fl.find(f => has(f, a)) || fl.find(f => has(f, b)) || fl[0];
+}
+
+function renderSchool(a, b, fam) {
+  const all = fam.m, sa = sym(a.n), sb = sym(b.n), dc = lang === "fr" ? "," : ".";
+  const ia = all.findIndex(c => c.s === sa), ib = all.findIndex(c => c.s === sb), zi = all.findIndex(c => c.d === 0);
+  const core = all.map((c, i) => c.x ? -1 : i).filter(i => i >= 0);
+  let lo = Math.min(core[0], zi), hi = Math.max(core[core.length - 1], zi);
+  [ia, ib].forEach(i => { if (i >= 0) { lo = Math.min(lo, i); hi = Math.max(hi, i); } });
+  const cols = all.slice(lo, hi + 1).map(c => ({ s: c.s, e: c.d * fam.exp }));
+  const w = cols.map((c, j) => j ? cols[j - 1].e - c.e : (cols.length > 1 ? c.e - cols[1].e : fam.exp));
+  const refU = units().find(u => sym(u.n) === all[zi].s);
+  const rightIdx = j => w.slice(0, j + 1).reduce((p, q) => p + q, 0) - 1;
+  const N0 = w.reduce((p, q) => p + q, 0);
+  const rows = []; let addL = 0, addR = 0;
+  vals.forEach(s => {
+    const t = s.trim().replace(",", ".");
+    if (!NUM.test(t)) return;
+    const x = Number(t);
+    let src, ja;
+    if (ia >= 0) { src = plain(t); ja = ia - lo; }
+    else { src = plain(String(Number((Math.abs(a.to(x)) / refU.to(1)).toPrecision(10)))); ja = zi - lo; }
+    const pf0 = rightIdx(ja);
+    addL = Math.max(addL, src.i.length - 1 - pf0);
+    addR = Math.max(addR, pf0 + src.f.length - (N0 - 1));
+    rows.push({ x, neg: x < 0, src, ja });
+  });
+  w[0] += addL;
+  const tail = Math.min(12, addR), N = w.reduce((p, q) => p + q, 0) + tail;
+  const starts = new Set(); let acc = 0; w.forEach(q => { starts.add(acc); acc += q; });
+  let head = "<thead><tr>" + cols.map((c, j) => '<th colspan="' + w[j] + '" class="' + (j + lo === ia ? "src" : j + lo === ib ? "dst" : "") + '">' + c.s + "</th>").join("") + (tail ? '<th colspan="' + tail + '" class="tail"></th>' : "") + "</tr></thead><tbody>";
+  let body = "", lines = [];
+  rows.forEach(r => {
+    const pf = rightIdx(r.ja);
+    r.src.f = r.src.f.slice(0, Math.max(0, N - 1 - pf));
+    const L = r.src.i.length, first = pf - (L - 1), last = pf + r.src.f.length, arr = Array(N).fill("");
+    (r.src.i + r.src.f).split("").forEach((d, k) => { arr[first + k] = d; });
+    let pt = -1, res, a0 = first, b0 = last;
+    if (ib >= 0) {
+      pt = rightIdx(ib - lo); a0 = Math.min(first, pt); b0 = Math.max(last, pt);
+      let ip = "", fp = "";
+      for (let k = a0; k <= b0; k++) { const d = arr[k] || "0"; if (k <= pt) ip += d; else fp += d; }
+      ip = ip.replace(/^0+(?=\d)/, ""); fp = fp.replace(/0+$/, "");
+      res = (r.neg && /[1-9]/.test(ip + fp) ? "−" : "") + ip + (fp ? dc + fp : "");
+    } else res = fmt(b.from(a.to(r.x)));
+    body += "<tr>" + arr.map((d, k) => {
+      let c = starts.has(k) ? "cs" : "", txt = d;
+      if (d) c += " d"; else if (ib >= 0 && k >= a0 && k <= b0) { txt = "0"; c += " z"; }
+      if (k === pf) c += " dp";
+      if (k === pt) c += " tp";
+      return '<td class="' + c + '" data-d="' + dc + '">' + txt + "</td>";
+    }).join("") + "</tr>";
+    const typed = (r.neg ? "−" : "") + r.src.i + (r.src.f ? dc + r.src.f : "");
+    const from = ia >= 0 ? ia : zi;
+    let line = ia >= 0 ? typed + " " + sa : fmt(r.x) + " " + sa + " = " + typed + " " + all[zi].s;
+    if (ib >= 0 && ib !== from) line += " × " + pow10i((all[from].d - all[ib].d) * fam.exp);
+    if (ib < 0 || ib !== from || ia >= 0) line += " = " + res + " " + sb;
+    lines.push(line);
+  });
+  if (!rows.length) { body = "<tr>" + Array(N).fill("").map((d, k) => '<td class="' + (starts.has(k) ? "cs" : "") + '"></td>').join("") + "</tr>"; lines.push(T("typeHint")); }
+  $("ladder").className = "school";
+  $("ladder").innerHTML = head + body + "</tbody>";
+  $("calcs").innerHTML = lines.map(c => "<li>" + c + "</li>").join("");
+}
+
+function renderLadder(a, b) {
+  const fl = FAM[$("cat").value];
+  if (!fl) { $("lIntroP").textContent = T("lIntro2"); renderGeneric(a, b); return; }
+  $("lIntroP").textContent = T("lIntro");
+  renderSchool(a, b, pickFam(fl, a, b));
+}
+
+function updateOutputs() {
+  const p = sel(); if (!p) return;
+  const [a, b] = p;
+  [...$("rows").children].forEach((tr, i) => {
+    const r = convert(vals[i], a, b), o = tr.querySelector(".out");
+    o.textContent = r.text; o.classList.toggle("bad", !!r.bad);
+  });
+  renderLadder(a, b);
+}
+
+function renderTable() {
+  const p = sel();
+  $("tablePanel").hidden = !p; $("ladderPanel").hidden = !p; $("hintPanel").hidden = !!p; $("swap").disabled = !p;
+  if (!p) return;
+  const [a, b] = p;
+  $("thFrom").textContent = T("thFrom") + " (" + sym(a.n) + ")";
+  $("thTo").textContent = T("thTo") + " (" + sym(b.n) + ")";
+  $("ratio").textContent = "1 " + sym(a.n) + " = " + fmt(b.from(a.to(1))) + " " + sym(b.n);
+  const body = $("rows"); body.innerHTML = "";
+  vals.forEach((v, i) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = '<td><input type="text" inputmode="decimal" autocomplete="off"></td><td><div class="out" aria-live="polite"></div></td>';
+    const inp = tr.querySelector("input"); inp.value = v;
+    inp.addEventListener("input", () => { vals[i] = inp.value; updateOutputs(); });
+    body.appendChild(tr);
+  });
+  updateOutputs();
+}
+
+function applyLang() {
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+  document.querySelectorAll("[data-i]").forEach(e => { e.textContent = T(e.dataset.i); });
+  $("swap").title = T("swap"); $("swap").setAttribute("aria-label", T("swap"));
+  document.querySelectorAll("[data-lang]").forEach(b => b.setAttribute("aria-pressed", b.dataset.lang === lang));
+  const cur = $("cat").value;
+  $("cat").innerHTML = "";
+  Object.keys(DATA).forEach(k => { const o = document.createElement("option"); o.value = k; o.textContent = catName(k); $("cat").appendChild(o); });
+  if (cur) $("cat").value = cur;
+  const f = $("from").value, t = $("to").value, u = units();
+  fillSelect($("from"), u, T("choose")); fillSelect($("to"), u, T("choose"));
+  $("from").value = f; $("to").value = t;
+  renderTable();
+}
+
+$("cat").addEventListener("change", () => {
+  const u = units();
+  fillSelect($("from"), u, T("choose")); fillSelect($("to"), u, T("choose"));
+  renderTable();
+});
+$("from").addEventListener("change", renderTable);
+$("to").addEventListener("change", renderTable);
+$("swap").addEventListener("click", () => { const f = $("from").value; $("from").value = $("to").value; $("to").value = f; renderTable(); });
+$("add").addEventListener("click", () => { vals.push(""); renderTable(); const ins = $("rows").querySelectorAll("input"); ins[ins.length - 1].focus(); });
+$("clear").addEventListener("click", () => { vals = vals.map(() => ""); renderTable(); });
+document.querySelectorAll("[data-lang]").forEach(b => b.addEventListener("click", () => {
+  lang = b.dataset.lang;
+  try { localStorage.setItem("oguc-lang", lang); } catch (e) {}
+  applyLang();
+}));
+
+const ALLOWED = (window.ALLOWED_EMAILS || []).map(s => String(s).trim().toLowerCase()).filter(Boolean);
+async function sha(s) {
+  const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
+  return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, "0")).join("");
+}
+async function isAllowed(email) {
+  const e = email.trim().toLowerCase();
+  if (!e) return false;
+  if (ALLOWED.includes(e)) return true;
+  if (!(window.crypto && crypto.subtle)) return false;
+  return ALLOWED.includes(await sha(e));
+}
+function setLocked(l) { document.body.classList.toggle("locked", l); $("out").hidden = l; }
+async function tryLogin(email, manual) {
+  let ok = false;
+  try { ok = await isAllowed(email); } catch (e) {}
+  if (ok) {
+    if (manual) { try { localStorage.setItem("oguc-email", email.trim().toLowerCase()); } catch (e) {} }
+    setLocked(false); $("gErr").textContent = "";
+  } else {
+    setLocked(true);
+    try { localStorage.removeItem("oguc-email"); } catch (e) {}
+    $("gErr").textContent = manual ? T("gErr") : "";
+  }
+  return ok;
+}
+$("gBtn").addEventListener("click", () => tryLogin($("email").value, true));
+$("email").addEventListener("keydown", e => { if (e.key === "Enter") tryLogin($("email").value, true); });
+$("out").addEventListener("click", () => { try { localStorage.removeItem("oguc-email"); } catch (e) {} $("email").value = ""; setLocked(true); });
+let savedEmail = ""; try { savedEmail = localStorage.getItem("oguc-email") || ""; } catch (e) {}
+if (savedEmail) tryLogin(savedEmail, false);
+applyLang();
+</script>
+</body>
+</html>
